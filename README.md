@@ -1,4 +1,4 @@
-# AWS ECS Fargate Tutorial: Criando e deployando uma aplicação Node.js e infre com Cloudformation
+# AWS ECS Fargate Tutorial: Criando e deployando uma aplicação Node.js e infra com Cloudformation
 
 Série de vídeos no Youtube explicando como construir e deployar uma aplicação Node.js usando o AWS ECS Fargate.
 
