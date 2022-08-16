@@ -1,6 +1,12 @@
-# AWS ECS Fargate Tutorial: Criando e deployando uma aplicação Node.js
+# AWS ECS Fargate Tutorial: Criando e deployando uma aplicação Node.js e infre com Cloudformation
 
 Série de vídeos no Youtube explicando como construir e deployar uma aplicação Node.js usando o AWS ECS Fargate.
+
+# Infraestrutura com CloudFormation
+
+Executar o arquivo de infra.yaml no CloudFormation
+- Cria a infraestrutura do video (AWS ECS Fargate: Configurando VPC, Internet Gateway, Subnets e Route Tables) com as correções que ele faz no videos posteriores. 
+- Cria ECR, pode mudar o nome do repositorio caso queira.
 
 ## Vídeos no Youtube
 1. [Entendendo o que será construído](https://youtu.be/SwUC4sXEcqE)
@@ -20,27 +26,3 @@ Série de vídeos no Youtube explicando como construir e deployar uma aplicaçã
 ## Links
 
 - [Playlist dos vídeos](https://www.youtube.com/playlist?list=PLWQmZVQayUUI5RinDqpoIXiRYWy5YZKjs)
-- [Ferramenta CIDR](https://cidr.xyz/)
-- [O que é CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
-- [Fargate Network Mode](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html#fargate-tasks-networkmode)
-- [Analogia de uma VPC completa](https://start.jcolemorrison.com/aws-vpc-core-concepts-analogy-guide/)
-- [Post oficial da AWS sobre a rede de uma task no Fargate](https://aws.amazon.com/blogs/compute/task-networking-in-aws-fargate/)
-
-
-## Ordem de deleção dos recursos na AWS
-1. ECS Service
-2. Task definition
-3. Load balancer
-4. Target group
-5. Service security group
-6. Load balancer security group
-7. NAT Gateways
-8. Subnets
-9. Dettach Internet Gateway
-10. Delete Internet Gateway
-11. Route tables
-12. VPC
-13. ECS Cluster
-14. ECR
-15. IAM
-16. Cloudwatch
