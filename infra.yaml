@@ -71,13 +71,13 @@ Resources:
         - Key: Name
           Value: !Sub ${AWS::StackName}-Privada-B
 
-# Criando o Elascts IP para o NatGateway A
+# Criando o Elastcs IP para o NatGateway A
   NATGatawayElastcIpa:
     Type: AWS::EC2::EIP
     Properties:
       Domain: NovoVPC
 
-# Criando natGayway A
+# Criando natGateway A
     Type: AWS::EC2::NatGateway
     DependsOn: NATGatawayElastcIpa
     Properties:
@@ -87,13 +87,13 @@ Resources:
         - Key: Name
           Value: !Join ['', ["NAT-A-", !Ref "AWS::StackName" ]]
 
-# Criando o Elascts IP para o NatGateway B
+# Criando o Elastcs IP para o NatGateway B
   NATGatawayElastcIpb:
     Type: AWS::EC2::EIP
     Properties:
       Domain: NovoVPC
 
-# Criando natGayway B
+# Criando natGateway B
   NovoNATGatawayB:
     Type: AWS::EC2::NatGateway
     DependsOn: NATGatawayElastcIpb
@@ -105,7 +105,7 @@ Resources:
           Value: !Join ['', ["NAT-B-", !Ref "AWS::StackName" ]]
 
 
-# Criando Route Table Private a
+# Criando Route Table Private A
   PrivadaRouteTableA:
     Type: AWS::EC2::RouteTable
     Properties:
