@@ -1,0 +1,208 @@
+Resources:
+  # criando meu vpc
+  NovoVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.100.0.0/16
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      Tags:
+        - Key: "Name"
+          Value: !Sub ${AWS::StackName}-VPC
+
+# criando meu InternetGateway
+  NovoInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    DependsOn: NovoVPC
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-Igw
+
+  NovoAttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref NovoVPC
+      InternetGatewayId: !Ref NovoInternetGateway
+
+# Subnet Publica A
+  NovoSubNetPublicA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.100.1.0/24
+      VpcId: !Ref NovoVPC
+      AvailabilityZone: us-east-1a
+      MapPublicIpOnLaunch: 'true'
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-Publica-A
+
+# Subnet Publica B
+  NovoSubNetPublicB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.100.2.0/24
+      VpcId: !Ref NovoVPC
+      AvailabilityZone: us-east-1b
+      MapPublicIpOnLaunch: 'true'
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-Publica-B
+
+# Subnet Private A
+  NovoSubNetPrivateA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.100.10.0/24
+      VpcId: !Ref NovoVPC
+      AvailabilityZone: us-east-1a
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-Privada-A
+
+# Subnet Private B
+  NovoSubNetPrivateB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.100.11.0/24
+      VpcId: !Ref NovoVPC
+      AvailabilityZone: us-east-1b
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-Privada-B
+
+# Criando o Elascts IP para o NatGateway A
+  NATGatawayElastcIpa:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: NovoVPC
+
+# Criando natGayway A
+    Type: AWS::EC2::NatGateway
+    DependsOn: NATGatawayElastcIpa
+    Properties:
+      AllocationId: !GetAtt NATGatawayElastcIpa.AllocationId
+      SubnetId: !Ref NovoSubNetPublicA
+      Tags:
+        - Key: Name
+          Value: !Join ['', ["NAT-A-", !Ref "AWS::StackName" ]]
+
+# Criando o Elascts IP para o NatGateway B
+  NATGatawayElastcIpb:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: NovoVPC
+
+# Criando natGayway B
+  NovoNATGatawayB:
+    Type: AWS::EC2::NatGateway
+    DependsOn: NATGatawayElastcIpb
+    Properties:
+      AllocationId: !GetAtt NATGatawayElastcIpb.AllocationId
+      SubnetId: !Ref NovoSubNetPublicB
+      Tags:
+        - Key: Name
+          Value: !Join ['', ["NAT-B-", !Ref "AWS::StackName" ]]
+
+
+# Criando Route Table Private a
+  PrivadaRouteTableA:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref NovoVPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-Privada-A
+        
+  PrivadaRouteA:
+    Type: AWS::EC2::Route
+    DependsOn: NovoNATGatawayA
+    Properties:
+      RouteTableId: !Ref PrivadaRouteTableA
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NovoNATGatawayA
+
+# Criando Route Table Private B
+  PrivadaRouteTableB:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref NovoVPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-Privada-B
+
+  PrivadaRouteB:
+    Type: AWS::EC2::Route
+    DependsOn: NovoNATGatawayB
+    Properties:
+      RouteTableId: !Ref PrivadaRouteTableB
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NovoNATGatawayB
+
+# Criando Route Table Publica
+  PublicaRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref NovoVPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-Publica
+        
+  PublicaRoute1:
+    Type: AWS::EC2::Route
+    DependsOn: NovoInternetGateway
+    Properties:
+      RouteTableId: !Ref PublicaRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref NovoInternetGateway
+
+# Associando a tabela de rotas com a subnets Publica A
+  PublicaRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicaRouteTable
+      SubnetId: !Ref NovoSubNetPublicA
+# Associando a tabela de rotas com a subnets Publica B
+  PublicaRouteTableAssociationB:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicaRouteTable
+      SubnetId: !Ref NovoSubNetPublicB
+
+# Associando a tabela de rotas com a subnets Privada A
+  PrivadaRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivadaRouteTable
+      SubnetId: !Ref NovoSubNetPrivateA
+# Associando a tabela de rotas com a subnets Privada B
+  PrivadaRouteTableAssociationB:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivadaRouteTableB
+      SubnetId: !Ref NovoSubNetPrivateB
+
+# Criando Security Group para o LoadBalancer
+  NovoLoadBalancerSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: LoadBalancer
+      GroupDescription: Sec Group para Aplication LoadBalancer
+      VpcId: !Ref NovoVPC
+      SecurityGroupIngress:
+        -
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      Tags:
+       - Key: Name
+         Value: !Sub ${AWS::StackName}-Sg-Alb
+
+# Criando ECR
+  RepositorioPrivadoECR: 
+    Type: AWS::ECR::Repository
+    Properties: 
+      RepositoryName: "app-dog"
+      ImageScanningConfiguration: 
+        ScanOnPush: true
